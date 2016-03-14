@@ -1,7 +1,7 @@
 <?php
-
 /**
- * The template for displaying default pages
+ * Template Name: Hidden Page
+ * Displays Hidden Page
  *
  * @package WordPress
  * @subpackage Tatton
@@ -10,6 +10,8 @@
 $sector = getSector();
 
 get_header();
+
+if (is_user_logged_in()):
 
 while(have_posts())
 {
@@ -65,5 +67,36 @@ while(have_posts())
         }
     }
 }
+
+else:
+?>
+<section>
+    <div class="hero">
+        <div class="hero__overlay"></div>
+        <div class="hero__content">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6 hero__text pt-lg pb-lg">
+                        <h2 class="hero__title">Login</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<div class="container">
+	<div class="row mt-lg">
+		<div class="col-sm-5 mb-lg">
+            <p>To view this content you must be logged in.</p>
+			<?php do_action('custom_login'); ?>
+		</div>
+        <div class="col-sm-5 col-sm-offset-2 mb-lg">
+            <p>To gain access to our IFA resources please register <a href="http://www.tattoninvestments.com/wp-login.php?action=register">here</a>.</p>
+        </div>
+	</div>
+</div>
+
+<?php
+endif;
 
 get_footer();

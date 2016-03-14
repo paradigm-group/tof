@@ -1,44 +1,114 @@
-<?php get_header(); ?>
+<?php
 
-			<div id="content" class="wrapper">
+/**
+ * The template for displaying default pages
+ *
+ * @package WordPress
+ * @subpackage Tatton
+ */
 
-				<div id="inner-content" class="container">
+$sector = getSector();
 
-					<div class="main" role="main">
+get_header();
 
-						<?php if (have_posts()) : while (have_posts()) : the_post(); ?>
+if (have_posts()) : while (have_posts()) : the_post();
 
-							<?php
-								/*
-								 * Ah, post formats. Nature's greatest mystery (aside from the sloth).
-								 *
-								 * So this function will bring in the needed template file depending on what the post
-								 * format is. The different post formats are located in the post-formats folder.
-								 *
-								 *
-								 * REMEMBER TO ALWAYS HAVE A DEFAULT ONE NAMED "format.php" FOR POSTS THAT AREN'T
-								 * A SPECIFIC POST FORMAT.
-								 *
-								 * If you want to remove post formats, just delete the post-formats folder and
-								 * replace the function below with the contents of the "format.php" file.
-								*/
-								get_template_part( 'post-formats/format', get_post_format() );
-							?>
+    $image = wp_get_attachment_image_src(get_post_thumbnail_id($post->ID), 'full');
 
-						<?php endwhile; ?>
+    $title = get_the_title();
+    $permalink = get_the_permalink();
+    $twitter_link   = "http://twitter.com/home?status=".urlencode($title)."+".urlencode($permalink);
+    $facebook_link  = "https://www.facebook.com/sharer/sharer.php?u=".urlencode($permalink);
+    $linkedin_link  = "https://www.linkedin.com/shareArticle?mini=true&url=".urlencode($permalink)."&title=".urlencode($title);
+?>
 
-						<?php else : ?>
+    <section class="news">
+        <div class="news__header">
+            <div class="container">
+                <div class="row">
+                    <div class="col-xs-12 pt-lg pb-lg">
+                        <h1><?php echo $title; ?></h1>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                            <?php get_template_part ('partials/no-post-found');?>
+        <div class="container">
+            <div class="row">
+                <div class="col-xs-12 mt-lg news__content">
+                    <img class="hidden-xs" src="<?php echo $image[0]; ?>" alt="">
+                    <div>
+                        <?php the_content(); ?>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 text-center mt-md">
+                    <h4>Share this article</h4>
+                    <ul class="social social--navbar social--news">
+                        <li><a href="<?php echo $facebook_link; ?>" class="facebook" target="_blank" title="facebook"></a></li>
+                        <li><a href="<?php echo $twitter_link; ?>" class="twitter" target="_blank" title="Twitter"></a></li>
+                        <li><a href="<?php echo $linkedin_link; ?>" class="linkedin" target="_blank" title="Linkedin"></a></li>
+                    </ul>
+                    <hr class="mt-lg">
+                </div>
+            </div>
+            <div class="row mt-lg">
+                <?php
+                    $id = get_the_id();
 
-						<?php endif; ?>
+                    $cat_id = getCategory($sector);
 
-					</div>
+                    $args = array(
+                        'post_type' => 'post',
+                        'cat' => $cat_id,
+                        'post_status' => 'publish',
+                        'posts_per_page' => 4,
+                        'post__not_in' => array($id)
+                    );
 
-					<?php get_sidebar(); ?>
+                    $query = new WP_Query($args);
 
-				</div>
+                    if ($query->have_posts())
+                    {
+                        $output = '';
 
-			</div>
+                        while ($query->have_posts())
+                        {
+                            $query->the_post();
 
-<?php get_footer(); ?>
+                            $title = get_the_title();
+                            $image = wp_get_attachment_image_src(get_post_thumbnail_id($post->ID), 'full');
+                            $permalink = get_the_permalink();
+
+                            $output .= "
+                                <div class='col-sm-3'>
+                                     <div class='row'>
+                                        <div class='col-xs-6 col-sm-12'>
+                                            <img class='img-responsive' src='{$image[0]}'>
+                                        </div>
+                                        <div class='col-xs-6 col-sm-12'>
+                                            <h5 class='news-snippet__title cl-{$sector} mt-sm'>{$title}</h5>
+                                            <p><a class='more' href='{$permalink}'>Read More</a></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ";
+                        }
+
+                        wp_reset_postdata();
+
+                        echo $output;
+
+                    }
+                ?>
+            </div>
+        </div>
+    </section>
+
+    <?php include('partials/twitter.php'); ?>
+
+<?php
+endwhile; endif;
+
+get_footer();
